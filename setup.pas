@@ -18,7 +18,9 @@ type
     edtTarget: TLabeledEdit;
     SpeedButton1: TSpeedButton;
     SpeedButton2: TSpeedButton;
-    procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
+    procedure edtSourceChange(Sender: TObject);
+    procedure edtTargetChange(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var {%H-}CanClose: boolean);
     procedure FormDestroy(Sender: TObject);
     procedure SpeedButton1Click(Sender: TObject);
     procedure SpeedButton2Click(Sender: TObject);
@@ -50,6 +52,7 @@ var
 begin
   if SelectDirectory('', '', Dir, True) then begin
     edtSource.Text := Dir;
+    Button1.Enabled := not FSourceOldDir.Equals(Dir);
   end;
 end;
 
@@ -59,14 +62,40 @@ var
 begin
   if SelectDirectory('', '', Dir, True) then begin
     edtTarget.Text := Dir;
+    Button1.Enabled := not FTargetOldDir.Equals(Dir);
   end;
 end;
 
 procedure TfrmSetup.FormCloseQuery(Sender: TObject; var CanClose: boolean);
 begin
-  FIni.WriteString('PicDir', 'SourceDir', edtSource.Text);
-  FIni.WriteString('PicDir', 'TargetDir', edtTarget.Text);
-  FIni.UpdateFile;
+  CanClose := False;
+
+  if ModalResult = mrOK then begin
+    if not DirectoryExists(edtSource.Text) then begin
+      ShowMessage('Source folder not exists !');
+      Exit;
+    end;
+    if not DirectoryExists(edtTarget.Text) then begin
+      ShowMessage('Target folder not exists !');
+      Exit;
+    end;
+
+    FIni.WriteString('PicDir', 'SourceDir', edtSource.Text);
+    FIni.WriteString('PicDir', 'TargetDir', edtTarget.Text);
+    FIni.UpdateFile;
+  end;
+
+  CanClose := True;
+end;
+
+procedure TfrmSetup.edtTargetChange(Sender: TObject);
+begin
+  Button1.Enabled := not FTargetOldDir.Equals(edtTarget.Text);
+end;
+
+procedure TfrmSetup.edtSourceChange(Sender: TObject);
+begin
+  Button1.Enabled := not FSourceOldDir.Equals(edtSource.Text);
 end;
 
 constructor TfrmSetup.Create(TheOwner: TComponent; const CfgFile: string);

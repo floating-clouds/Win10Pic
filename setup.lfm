@@ -18,6 +18,7 @@ object frmSetup: TfrmSetup
     Top = 152
     Width = 75
     Caption = 'OK'
+    Enabled = False
     ModalResult = 1
     TabOrder = 0
   end
@@ -43,6 +44,7 @@ object frmSetup: TfrmSetup
     EditLabel.ParentColor = False
     TabOrder = 2
     Text = 'edtSource'
+    OnChange = edtSourceChange
   end
   object edtTarget: TLabeledEdit
     Left = 24
@@ -55,6 +57,7 @@ object frmSetup: TfrmSetup
     EditLabel.ParentColor = False
     TabOrder = 3
     Text = 'edtTarget'
+    OnChange = edtTargetChange
   end
   object SpeedButton1: TSpeedButton
     Left = 340

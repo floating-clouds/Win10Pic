@@ -45,7 +45,7 @@ type
 
     procedure InitListView;
     procedure ClearListView;
-    procedure AddListViewItem(const Dir: string; const SearchRec: TSearchRec);
+    procedure AddListViewItem(const {%H-}Dir: string; const SearchRec: TSearchRec);
 
     procedure CopyFile(const Dir: string; const SearchRec: TSearchRec);
 
@@ -61,11 +61,19 @@ implementation
 
 { TformMain }
 
-uses windirs, IniFiles, setup, FPimage;
+uses windirs, IniFiles, setup, FPimage, Windows;
 
 procedure TformMain.FormCreate(Sender: TObject);
+var
+  lpVersionInformation: TOSVersionInfo;
 begin
-  // todo check the windows version
+  lpVersionInformation.dwOSVersionInfoSize := SizeOf(TOSVersionInfo);
+  if GetVersionEx(lpVersionInformation) then begin
+    if lpVersionInformation.dwMajorVersion <> 10 then begin
+      ShowMessage('Only Support Win10 !!!');
+    end;
+  end;
+
   LoadConfig;
   FPicDir := FSourceDir;
   InitListView;
@@ -177,7 +185,7 @@ var
   DosError: longint;
 begin
   DirTmp := IncludeTrailingPathDelimiter(Dir);
-  DosError := FindFirst(DirTmp + '*.*', faArchive, SearchRec);
+  DosError := SysUtils.FindFirst(DirTmp + '*.*', faArchive, SearchRec);
   try
     while (DosError = 0) do
     begin
@@ -185,10 +193,10 @@ begin
       begin
         OnFile(DirTmp, SearchRec);
       end;
-      DosError := FindNext(SearchRec);
+      DosError := SysUtils.FindNext(SearchRec);
     end;
   finally
-    FindClose(SearchRec);
+    SysUtils.FindClose(SearchRec);
   end;
 end;
 
@@ -223,10 +231,10 @@ var
 
   function ReadString(const Key: string; const DefaultValue: string): string;
   begin
-    Result := Ini.ReadString('PicDir', key, '');
+    Result := ExcludeTrailingPathDelimiter(Ini.ReadString('PicDir', key, ''));
     if Result.IsEmpty then begin
-      Result := DefaultValue;
-      Ini.WriteString('PicDir', key, DefaultValue);
+      Result := ExcludeTrailingPathDelimiter(DefaultValue);
+      Ini.WriteString('PicDir', key, Result);
       Ini.UpdateFile;
     end;
   end;
